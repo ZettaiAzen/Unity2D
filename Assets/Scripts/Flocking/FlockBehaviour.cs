@@ -181,9 +181,7 @@ public class FlockBehaviour : MonoBehaviour
 
   IEnumerator Coroutine_Flocking()
   {
-    while (true)
-    {
-      if (useFlocking)
+    if (useFlocking)
       {
         foreach (Flock flock in flocks)
         {
@@ -200,7 +198,6 @@ public class FlockBehaviour : MonoBehaviour
         }
       }
       yield return new WaitForSeconds(TickDuration);
-    }
   }
 
 
@@ -235,9 +232,7 @@ public class FlockBehaviour : MonoBehaviour
 
   IEnumerator Coroutine_SeparationWithEnemies()
   {
-    while (true)
-    {
-      foreach (Flock flock in flocks)
+    foreach (Flock flock in flocks)
       {
         if (!flock.useFleeOnSightEnemyRule || flock.isPredator) continue;
 
@@ -254,14 +249,11 @@ public class FlockBehaviour : MonoBehaviour
         //yield return null;
       }
       yield return null;
-    }
   }
 
   IEnumerator Coroutine_AvoidObstacles()
   {
-    while (true)
-    {
-      foreach (Flock flock in flocks)
+    foreach (Flock flock in flocks)
       {
         if (flock.useAvoidObstaclesRule)
         {
@@ -288,13 +280,10 @@ public class FlockBehaviour : MonoBehaviour
         //yield return null;
       }
       yield return null;
-    }
   }
   IEnumerator Coroutine_Random_Motion_Obstacles()
   {
-    while (true)
-    {
-      for (int i = 0; i < Obstacles.Length; ++i)
+    for (int i = 0; i < Obstacles.Length; ++i)
       {
         Autonomous autono = Obstacles[i].GetComponent<Autonomous>();
         float rand = Random.Range(0.0f, 1.0f);
@@ -322,13 +311,10 @@ public class FlockBehaviour : MonoBehaviour
         autono.TargetSpeed /= 2.0f;
       }
       yield return new WaitForSeconds(2.0f);
-    }
   }
   IEnumerator Coroutine_Random()
   {
-    while (true)
-    {
-      foreach (Flock flock in flocks)
+    foreach (Flock flock in flocks)
       {
         if (flock.useRandomRule)
         {
@@ -363,7 +349,6 @@ public class FlockBehaviour : MonoBehaviour
         //yield return null;
       }
       yield return new WaitForSeconds(TickDurationRandom);
-    }
   }
   void Rule_CrossBorder_Obstacles()
   {
