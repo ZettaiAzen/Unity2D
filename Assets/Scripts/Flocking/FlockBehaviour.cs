@@ -26,7 +26,7 @@ public class FlockBehaviour : MonoBehaviour
 
     // creating object pool for boids
     Queue<GameObject> boidObjectPool = new Queue<GameObject>();
-    public int boidObjectPoolSize;
+    public int boidObjectPoolSize = 5000;
 
     void Reset()
   {
