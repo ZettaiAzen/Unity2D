@@ -141,7 +141,7 @@ public class FlockBehaviour : MonoBehaviour
         obj.name = "Boid_" + flock.name + "_" + flock.mAutonomous.Count;
         obj.transform.position = new Vector3(x, y, 0.0f);
         Autonomous boid = obj.GetComponent<Autonomous>();
-        flocks[0].mAutonomous.Add(boid);
+        flock.mAutonomous.Add(boid);
         boid.MaxSpeed = flock.maxSpeed;
         boid.RotationSpeed = flock.maxRotationSpeed;
     }
