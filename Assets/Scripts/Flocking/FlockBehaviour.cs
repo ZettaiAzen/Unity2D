@@ -22,6 +22,12 @@ public class FlockBehaviour : MonoBehaviour
   public int BatchSize = 100;
 
   public List<Flock> flocks = new List<Flock>();
+
+    // creating object pool for boids
+    Queue<GameObject> boidObjectPool = new Queue<GameObject>();
+    public int boidObjectPoolSize;
+
+
   void Reset()
   {
     flocks = new List<Flock>()
@@ -32,8 +38,21 @@ public class FlockBehaviour : MonoBehaviour
 
   void Start()
   {
-    // Randomize obstacles placement.
-    for(int i = 0; i < Obstacles.Length; ++i)
+        // creates boids to store in object pool
+        for (int i = 0; i < boidObjectPoolSize; i++)
+        {
+            GameObject obj = Instantiate(flocks[0].PrefabBoid);
+            obj.name = "Boid_" + flocks[0].name + "_" + flocks[0].mAutonomous.Count;
+            Autonomous boid = obj.GetComponent<Autonomous>();
+            boid.MaxSpeed = flocks[0].maxSpeed;
+            boid.RotationSpeed = flocks[0].maxRotationSpeed;
+
+            obj.SetActive(false);
+            boidObjectPool.Enqueue(obj);
+        }
+
+        // Randomize obstacles placement.
+        for (int i = 0; i < Obstacles.Length; ++i)
     {
       float x = Random.Range(Bounds.bounds.min.x, Bounds.bounds.max.x);
       float y = Random.Range(Bounds.bounds.min.y, Bounds.bounds.max.y);
@@ -58,14 +77,26 @@ public class FlockBehaviour : MonoBehaviour
     StartCoroutine(Coroutine_Random_Motion_Obstacles());
   }
 
+    void SpawnFromPool(float x_pos, float y_pos)
+    {
+        GameObject boidToSpawn = boidObjectPool.Dequeue();
+        Autonomous boid = boidToSpawn.GetComponent<Autonomous>();
+        flocks[0].mAutonomous.Add(boid);
+
+        boidToSpawn.SetActive(true);
+        boidToSpawn.transform.position = new Vector3(x_pos, y_pos, 0f);
+
+        boidObjectPool.Enqueue(boidToSpawn);
+    }
+   
   void CreateFlock(Flock flock)
   {
     for(int i = 0; i < flock.numBoids; ++i)
     {
       float x = Random.Range(Bounds.bounds.min.x, Bounds.bounds.max.x);
       float y = Random.Range(Bounds.bounds.min.y, Bounds.bounds.max.y);
-
-      AddBoid(x, y, flock);
+            
+            AddBoid(x, y, flock);
     }
   }
 
@@ -97,23 +128,25 @@ public class FlockBehaviour : MonoBehaviour
       float x = Random.Range(Bounds.bounds.min.x, Bounds.bounds.max.x);
       float y = Random.Range(Bounds.bounds.min.y, Bounds.bounds.max.y);
 
-      AddBoid(x, y, flocks[0]);
+      // using object pool to spawn the boids
+      SpawnFromPool(x, y);
+      //AddBoid(x, y, flocks[0]);
     }
     flocks[0].numBoids += count;
   }
 
-  void AddBoid(float x, float y, Flock flock)
-  {
-    GameObject obj = Instantiate(flock.PrefabBoid);
-    obj.name = "Boid_" + flock.name + "_" + flock.mAutonomous.Count;
-    obj.transform.position = new Vector3(x, y, 0.0f);
-    Autonomous boid = obj.GetComponent<Autonomous>();
-    flock.mAutonomous.Add(boid);
-    boid.MaxSpeed = flock.maxSpeed;
-    boid.RotationSpeed = flock.maxRotationSpeed;
-  }
+    void AddBoid(float x, float y, Flock flock)
+    {
+        GameObject obj = Instantiate(flock.PrefabBoid);
+        obj.name = "Boid_" + flock.name + "_" + flock.mAutonomous.Count;
+        obj.transform.position = new Vector3(x, y, 0.0f);
+        Autonomous boid = obj.GetComponent<Autonomous>();
+        flocks[0].mAutonomous.Add(boid);
+        boid.MaxSpeed = flock.maxSpeed;
+        boid.RotationSpeed = flock.maxRotationSpeed;
+    }
 
-  static float Distance(Autonomous a1, Autonomous a2)
+    static float Distance(Autonomous a1, Autonomous a2)
   {
     return (a1.transform.position - a2.transform.position).magnitude;
   }
