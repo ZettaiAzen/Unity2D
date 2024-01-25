@@ -6,6 +6,8 @@ public class Autonomous : MonoBehaviour
 {
   public float MaxSpeed = 10.0f;
 
+    // to let flockBehaviour call the transform.position of the boid
+    public Vector3 pos;
   public float Speed
   {
     get;
@@ -49,7 +51,10 @@ public class Autonomous : MonoBehaviour
   // Update is called once per frame
   public void Update()
   {
-    Vector3 targetDirection = TargetDirection;
+        pos = this.transform.position;
+
+
+        Vector3 targetDirection = TargetDirection;
     targetDirection.Normalize();
 
     Vector3 rotatedVectorToTarget = 
@@ -75,9 +80,10 @@ public class Autonomous : MonoBehaviour
 
   private void FixedUpdate()
   {
-  }
+       
+    }
 
-  private IEnumerator Coroutine_LerpTargetSpeed(
+    private IEnumerator Coroutine_LerpTargetSpeed(
     float start,
     float end,
     float seconds = 2.0f)

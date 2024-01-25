@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -22,7 +23,12 @@ public class FlockBehaviour : MonoBehaviour
   public int BatchSize = 100;
 
   public List<Flock> flocks = new List<Flock>();
-  void Reset()
+
+    // creating object pool for boids
+    Queue<GameObject> boidObjectPool = new Queue<GameObject>();
+    public int boidObjectPoolSize = 5000;
+
+    void Reset()
   {
     flocks = new List<Flock>()
     {
@@ -32,8 +38,23 @@ public class FlockBehaviour : MonoBehaviour
 
   void Start()
   {
-    // Randomize obstacles placement.
-    for(int i = 0; i < Obstacles.Length; ++i)
+        // creates boids to store in object pool
+        for (int i = 0; i < boidObjectPoolSize; i++)
+        {
+            GameObject obj = Instantiate(flocks[0].PrefabBoid);
+            obj.name = "Boid_" + flocks[0].name + "_" + flocks[0].mAutonomous.Count;
+            Autonomous boid = obj.GetComponent<Autonomous>();
+            boid.MaxSpeed = flocks[0].maxSpeed;
+            boid.RotationSpeed = flocks[0].maxRotationSpeed;
+
+            obj.SetActive(false);
+            boidObjectPool.Enqueue(obj);
+        }
+
+
+
+        // Randomize obstacles placement.
+        for (int i = 0; i < Obstacles.Length; ++i)
     {
       float x = Random.Range(Bounds.bounds.min.x, Bounds.bounds.max.x);
       float y = Random.Range(Bounds.bounds.min.y, Bounds.bounds.max.y);
@@ -58,7 +79,20 @@ public class FlockBehaviour : MonoBehaviour
     StartCoroutine(Coroutine_Random_Motion_Obstacles());
   }
 
-  void CreateFlock(Flock flock)
+    // function that activates the prespawned boids
+    void SpawnFromPool(float x_pos, float y_pos)
+    {
+        GameObject boidToSpawn = boidObjectPool.Dequeue();
+        Autonomous boid = boidToSpawn.GetComponent<Autonomous>();
+        flocks[0].mAutonomous.Add(boid);
+
+        boidToSpawn.SetActive(true);
+        boidToSpawn.transform.position = new Vector3(x_pos, y_pos, 0f);
+
+        boidObjectPool.Enqueue(boidToSpawn);
+    }
+
+    void CreateFlock(Flock flock)
   {
     for(int i = 0; i < flock.numBoids; ++i)
     {
@@ -97,7 +131,8 @@ public class FlockBehaviour : MonoBehaviour
       float x = Random.Range(Bounds.bounds.min.x, Bounds.bounds.max.x);
       float y = Random.Range(Bounds.bounds.min.y, Bounds.bounds.max.y);
 
-      AddBoid(x, y, flocks[0]);
+            SpawnFromPool(x, y);
+      //AddBoid(x, y, flocks[0]);
     }
     flocks[0].numBoids += count;
   }
@@ -132,30 +167,31 @@ public class FlockBehaviour : MonoBehaviour
     Vector3 steerPos = Vector3.zero;
 
     Autonomous curr = flock.mAutonomous[i];
-    for (int j = 0; j < flock.numBoids; ++j)
-    {
-      Autonomous other = flock.mAutonomous[j];
-      float dist = (curr.transform.position - other.transform.position).magnitude;
-      if (i != j && dist < flock.visibility)
-      {
-        speed += other.Speed;
-        flockDir += other.TargetDirection;
-        steerPos += other.transform.position;
-        count++;
-      }
-      if (i != j)
-      {
-        if (dist < flock.separationDistance)
-        {
-          Vector3 targetDirection = (
-            curr.transform.position -
-            other.transform.position).normalized;
+        // using parallel for
+        Parallel.For(0, flock.numBoids, j =>
+       {
+           Autonomous other = flock.mAutonomous[j];
+           float dist = (curr.pos - other.pos).magnitude;
+           if (i != j && dist < flock.visibility)
+           {
+               speed += other.Speed;
+               flockDir += other.TargetDirection;
+               steerPos += other.pos;
+               count++;
+           }
+           if (i != j)
+           {
+               if (dist < flock.separationDistance)
+               {
+                   Vector3 targetDirection = (
+                  curr.pos -
+                  other.pos).normalized;
 
-          separationDir += targetDirection;
-          separationSpeed += dist * flock.weightSeparation;
-        }
-      }
-    }
+                   separationDir += targetDirection;
+                   separationSpeed += dist * flock.weightSeparation;
+               }
+           }
+       });
     if (count > 0)
     {
       speed = speed / count;
@@ -210,27 +246,27 @@ public class FlockBehaviour : MonoBehaviour
     float sepDist, 
     float sepWeight)
   {
-    for(int i = 0; i < boids.Count; ++i)
-    {
-      for (int j = 0; j < enemies.Count; ++j)
-      {
-        float dist = (
-          enemies[j].transform.position -
-          boids[i].transform.position).magnitude;
-        if (dist < sepDist)
+        Parallel.For(0, boids.Count, i =>
         {
-          Vector3 targetDirection = (
-            boids[i].transform.position -
-            enemies[j].transform.position).normalized;
+            Parallel.For(0, enemies.Count, j =>
+           {
+               float dist = (
+             enemies[j].pos -
+             boids[i].pos).magnitude;
+               if (dist < sepDist)
+               {
+                   Vector3 targetDirection = (
+                 boids[i].pos -
+                 enemies[j].pos).normalized;
 
-          boids[i].TargetDirection += targetDirection;
-          boids[i].TargetDirection.Normalize();
+                   boids[i].TargetDirection += targetDirection;
+                   boids[i].TargetDirection.Normalize();
 
-          boids[i].TargetSpeed += dist * sepWeight;
-          boids[i].TargetSpeed /= 2.0f;
-        }
-      }
-    }
+                   boids[i].TargetSpeed += dist * sepWeight;
+                   boids[i].TargetSpeed /= 2.0f;
+               }
+           });
+        });
   }
 
   IEnumerator Coroutine_SeparationWithEnemies()
