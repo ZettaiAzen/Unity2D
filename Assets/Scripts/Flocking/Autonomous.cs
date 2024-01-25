@@ -6,6 +6,8 @@ public class Autonomous : MonoBehaviour
 {
   public float MaxSpeed = 10.0f;
 
+    // to let flockBehaviour call the transform.position of the boid
+    public Vector3 pos;
   public float Speed
   {
     get;
@@ -75,9 +77,11 @@ public class Autonomous : MonoBehaviour
 
   private void FixedUpdate()
   {
-  }
+       pos = this.transform.position;
 
-  private IEnumerator Coroutine_LerpTargetSpeed(
+    }
+
+    private IEnumerator Coroutine_LerpTargetSpeed(
     float start,
     float end,
     float seconds = 2.0f)

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -132,30 +133,31 @@ public class FlockBehaviour : MonoBehaviour
     Vector3 steerPos = Vector3.zero;
 
     Autonomous curr = flock.mAutonomous[i];
-    for (int j = 0; j < flock.numBoids; ++j)
-    {
-      Autonomous other = flock.mAutonomous[j];
-      float dist = (curr.transform.position - other.transform.position).magnitude;
-      if (i != j && dist < flock.visibility)
-      {
-        speed += other.Speed;
-        flockDir += other.TargetDirection;
-        steerPos += other.transform.position;
-        count++;
-      }
-      if (i != j)
-      {
-        if (dist < flock.separationDistance)
-        {
-          Vector3 targetDirection = (
-            curr.transform.position -
-            other.transform.position).normalized;
+        // using parallel for
+        Parallel.For(0, flock.numBoids, j =>
+       {
+           Autonomous other = flock.mAutonomous[j];
+           float dist = (curr.pos - other.pos).magnitude;
+           if (i != j && dist < flock.visibility)
+           {
+               speed += other.Speed;
+               flockDir += other.TargetDirection;
+               steerPos += other.pos;
+               count++;
+           }
+           if (i != j)
+           {
+               if (dist < flock.separationDistance)
+               {
+                   Vector3 targetDirection = (
+                  curr.pos -
+                  other.pos).normalized;
 
-          separationDir += targetDirection;
-          separationSpeed += dist * flock.weightSeparation;
-        }
-      }
-    }
+                   separationDir += targetDirection;
+                   separationSpeed += dist * flock.weightSeparation;
+               }
+           }
+       });
     if (count > 0)
     {
       speed = speed / count;
