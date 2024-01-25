@@ -51,7 +51,10 @@ public class Autonomous : MonoBehaviour
   // Update is called once per frame
   public void Update()
   {
-    Vector3 targetDirection = TargetDirection;
+        pos = this.transform.position;
+
+
+        Vector3 targetDirection = TargetDirection;
     targetDirection.Normalize();
 
     Vector3 rotatedVectorToTarget = 
@@ -77,8 +80,7 @@ public class Autonomous : MonoBehaviour
 
   private void FixedUpdate()
   {
-       pos = this.transform.position;
-
+       
     }
 
     private IEnumerator Coroutine_LerpTargetSpeed(
