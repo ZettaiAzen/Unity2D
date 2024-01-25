@@ -212,27 +212,27 @@ public class FlockBehaviour : MonoBehaviour
     float sepDist, 
     float sepWeight)
   {
-    for(int i = 0; i < boids.Count; ++i)
-    {
-      for (int j = 0; j < enemies.Count; ++j)
-      {
-        float dist = (
-          enemies[j].transform.position -
-          boids[i].transform.position).magnitude;
-        if (dist < sepDist)
+        Parallel.For(0, boids.Count, i =>
         {
-          Vector3 targetDirection = (
-            boids[i].transform.position -
-            enemies[j].transform.position).normalized;
+            Parallel.For(0, enemies.Count, j =>
+           {
+               float dist = (
+             enemies[j].pos -
+             boids[i].pos).magnitude;
+               if (dist < sepDist)
+               {
+                   Vector3 targetDirection = (
+                 boids[i].pos -
+                 enemies[j].pos).normalized;
 
-          boids[i].TargetDirection += targetDirection;
-          boids[i].TargetDirection.Normalize();
+                   boids[i].TargetDirection += targetDirection;
+                   boids[i].TargetDirection.Normalize();
 
-          boids[i].TargetSpeed += dist * sepWeight;
-          boids[i].TargetSpeed /= 2.0f;
-        }
-      }
-    }
+                   boids[i].TargetSpeed += dist * sepWeight;
+                   boids[i].TargetSpeed /= 2.0f;
+               }
+           });
+        });
   }
 
   IEnumerator Coroutine_SeparationWithEnemies()
