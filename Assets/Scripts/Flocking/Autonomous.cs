@@ -9,7 +9,7 @@ public class Autonomous : MonoBehaviour
   public float Speed
   {
     get;
-    private set;
+    set;
   } = 0.0f;
 
   public Vector2 accel = new Vector2(0.0f, 0.0f);
@@ -49,29 +49,29 @@ public class Autonomous : MonoBehaviour
   // Update is called once per frame
   public void Update()
   {
-    Vector3 targetDirection = TargetDirection;
-    targetDirection.Normalize();
+        //Vector3 targetDirection = TargetDirection;
+        //targetDirection.Normalize();
 
-    Vector3 rotatedVectorToTarget = 
-      Quaternion.Euler(0, 0, 90) * 
-      targetDirection;
+        //Vector3 rotatedVectorToTarget = 
+        //  Quaternion.Euler(0, 0, 90) * 
+        //  targetDirection;
 
-    Quaternion targetRotation = Quaternion.LookRotation(
-      forward: Vector3.forward,
-      upwards: rotatedVectorToTarget);
+        //Quaternion targetRotation = Quaternion.LookRotation(
+        //  forward: Vector3.forward,
+        //  upwards: rotatedVectorToTarget);
 
-    transform.rotation = Quaternion.RotateTowards(
-      transform.rotation, 
-      targetRotation, 
-      RotationSpeed * Time.deltaTime);
+        //transform.rotation = Quaternion.RotateTowards(
+        //  transform.rotation, 
+        //  targetRotation, 
+        //  RotationSpeed * Time.deltaTime);
 
-    Speed = Speed + ((TargetSpeed - Speed)/10.0f) * Time.deltaTime;
+        //Speed = Speed + ((TargetSpeed - Speed)/10.0f) * Time.deltaTime;
 
-    if (Speed > MaxSpeed)
-      Speed = MaxSpeed;
+        //if (Speed > MaxSpeed)
+        //  Speed = MaxSpeed;
 
-    transform.Translate(Vector3.right * Speed * Time.deltaTime, Space.Self);
-  }
+        //transform.Translate(Vector3.right * Speed * Time.deltaTime, Space.Self);
+    }
 
   private void FixedUpdate()
   {
