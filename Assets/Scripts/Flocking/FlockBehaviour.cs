@@ -21,9 +21,6 @@ public class FlockBehaviour : MonoBehaviour
   public bool useFlocking = false;
   public int BatchSize = 100;
 
-    // stores all the boids
-    public List<GameObject> boidsLst = new List<GameObject>();
-
   public List<Flock> flocks = new List<Flock>();
   void Reset()
   {
@@ -59,7 +56,6 @@ public class FlockBehaviour : MonoBehaviour
     StartCoroutine(Coroutine_AvoidObstacles());
     StartCoroutine(Coroutine_SeparationWithEnemies());
     StartCoroutine(Coroutine_Random_Motion_Obstacles());
-        StartCoroutine(BoidMovement());
   }
 
   void CreateFlock(Flock flock)
@@ -109,7 +105,6 @@ public class FlockBehaviour : MonoBehaviour
   void AddBoid(float x, float y, Flock flock)
   {
     GameObject obj = Instantiate(flock.PrefabBoid);
-        boidsLst.Add(obj);
     obj.name = "Boid_" + flock.name + "_" + flock.mAutonomous.Count;
     obj.transform.position = new Vector3(x, y, 0.0f);
     Autonomous boid = obj.GetComponent<Autonomous>();
@@ -183,43 +178,6 @@ public class FlockBehaviour : MonoBehaviour
       (steerPos - curr.transform.position) * (flock.useCohesionRule ? flock.weightCohesion : 0.0f);
   }
 
-
-    IEnumerator BoidMovement()
-    {
-        while (true)
-        {
-            foreach (GameObject boid in boidsLst)
-            {
-                Vector3 targetDirection = boid.GetComponent<Autonomous>().TargetDirection;
-                targetDirection.Normalize();
-
-                Vector3 rotatedVectorToTarget =
-                  Quaternion.Euler(0, 0, 90) *
-                  targetDirection;
-
-                Quaternion targetRotation = Quaternion.LookRotation(
-                  forward: Vector3.forward,
-                  upwards: rotatedVectorToTarget);
-
-                boid.transform.rotation = Quaternion.RotateTowards(
-                  boid.transform.rotation,
-                  targetRotation,
-                  boid.GetComponent<Autonomous>().RotationSpeed * Time.deltaTime);
-
-                float Speed = boid.GetComponent<Autonomous>().Speed;
-                float TargetSpeed = boid.GetComponent<Autonomous>().TargetSpeed;
-                float MaxSpeed = boid.GetComponent<Autonomous>().MaxSpeed;
-
-                boid.GetComponent<Autonomous>().Speed = Speed + ((TargetSpeed - Speed) / 10.0f) * Time.deltaTime;
-
-                if (Speed > MaxSpeed)
-                    Speed = MaxSpeed;
-
-                boid.transform.Translate(Vector3.right * Speed * Time.deltaTime, Space.Self);
-            }
-            yield return null;
-        }
-    }
 
   IEnumerator Coroutine_Flocking()
   {
